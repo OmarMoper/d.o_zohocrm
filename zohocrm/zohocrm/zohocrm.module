@@ -135,11 +135,11 @@ function zohocrm_menu() {
 function zohocrm_theme() {
   return array(
     'zohocrm_mapping_fields_table_dtz' => array(
-      'arguments' => array('form' => NULL),
+      'render element' => 'form',
       'file' => 'zohocrm.admin.inc',
     ),
     'zohocrm_mapping_fields_table_ztd' => array(
-      'arguments' => array('form' => NULL),
+      'render element' => array('form' => NULL),
       'file' => 'zohocrm.admin.inc',
     ),
   );
@@ -167,18 +167,18 @@ function zohocrm_mapping_load($name) {
 function zohocrm_mapping_fields_load($name) {
   $mapping = zohocrm_mapping_load($name);
 
-  $fields =  array();
-  $result = db_select('zohocrm_mapping', 'm')
+  $mapping['fields'] =  array();
+  $result = db_select('zohocrm_mapping_fields', 'm')
     ->fields('m')
     ->condition('mapping_name',$name,'=')
     ->execute()
-    ->fetchAssoc();
+    ->fetchAll(PDO::FETCH_ASSOC);
 
   foreach ($result as $k => $v)  {
-    $mappings[$k] = $v;
+    $mapping['fields'][$v['dst']] = $v;
   }
-
-  return $mappings;
+  dpm($mapping);
+  return $mapping;
 
 }
 
@@ -803,7 +803,7 @@ function zohocrm_get_users() {
     $response = $zoho->getUsers();
   }
   catch (Exception $e) {
-    drupal_set_message(t("Couldn't fetch Zoho CRM Users.", 'error'));
+    drupal_set_message(t("Couldn't fetch Zoho CRM Users."), 'warning');
     watchdog('zohocrm', "Couldn't fetch Zoho CRM Users. Error message: @message", array('@message' => $e->getMessage()), WATCHDOG_ERROR);
     return array();
   }
@@ -849,8 +849,8 @@ function zohocrm_zoho_module_prefix($module) {
  * Deletes mapping.
  */
 function zohocrm_mapping_delete($mapping_name) {
-  db_query("DELETE FROM {zohocrm_mapping} WHERE mapping_name = '%s'", $mapping_name);
-  db_query("DELETE FROM {zohocrm_mapping_fields} WHERE mapping_name = '%s'", $mapping_name);
+  db_query("DELETE FROM {zohocrm_mapping} WHERE mapping_name = :mapping_name", array(':mapping_name' => $mapping_name));
+  db_query("DELETE FROM {zohocrm_mapping_fields} WHERE mapping_name = :mapping_name", array(':mapping_name' => $mapping_name));
 
   drupal_set_message(t('Mapping @mapping has been deleted', array('@mapping' => $mapping_name)));
 }
@@ -904,9 +904,15 @@ function zohocrm_find_matching_drupal_object($zoho_data, $mapping, $endpoint) {
 }
 
 function zohocrm_record_mapping_get_zoho_id($drupal_endpoint, $zoho_module, $drupal_id) {
-  $sql = "SELECT zoho_id FROM {zohocrm_record_mapping} WHERE drupal_endpoint = '%s' AND drupal_id = %d AND zoho_module = '%s'";
 
-  return db_result(db_query($sql, $drupal_endpoint, $drupal_id, $zoho_module));
+  return db_query(
+    'SELECT zoho_id FROM {zohocrm_record_mapping} WHERE drupal_endpoint = :drupal_endpoint AND drupal_id = :drupal_id AND zoho_module = :zoho_module',
+    array(
+      ':drupal_endpoint' => $drupal_endpoint,
+      ':drupal_id'       => $drupal_id,
+      ':zoho_module'     => $zoho_module,
+    )
+  )->fetchField();
 }
 
 function zohocrm_record_mapping_get_drupal_id($drupal_endpoint, $zoho_module, $zoho_id) {
