@@ -34,12 +34,12 @@ function zohocrm_init() {
       $path = 'sites/all/libraries/zohocrm';
     }
 
-    if (file_exists($path . '/src/ZohoCRM/Client.php')) {
+    if (file_exists($path . '/src/Zoho/CRM/ZohoClient.php')) {
       if (!class_exists('\Composer\Autoload\ClassLoader')) {
         include_once __DIR__ . '/autoloader/ClassLoader.php';
       }
       $loader = new \Composer\Autoload\ClassLoader();
-      $loader->add('ZohoCRM', $path . '/src');
+      $loader->add('Zoho', $path . '/src');
       $loader->register();
     }
   }
@@ -308,12 +308,12 @@ function zohocrm_get_client() {
     return FALSE;
   }
 
-  if (!class_exists('ZohoCRM\Client')) {
+  if (!class_exists('Zoho\CRM\ZohoClient')) {
     watchdog('zohocrm', "Zoho CRM Library not found or couldn't be loaded.", array(), WATCHDOG_ERROR);
     return FALSE;
   }
 
-  return new ZohoCRM\Client($authtoken);
+  return new Zoho\CRM\ZohoClient($authtoken);
 }
 
 function zohocrm_get_zoho_modules() {
