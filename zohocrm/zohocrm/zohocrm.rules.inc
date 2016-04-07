@@ -6,24 +6,6 @@
  */
 
 /**
- * Settings form for Rules' actions.
- */
-function zohocrm_rules_action_form($settings, &$form) {
-  $settings += array('mapping' => '');
-
-  $options = zohocrm_mappings_select_options();
-  $form['settings']['mapping'] = array(
-    '#type' => 'select',
-    '#title' => t('Drupal to Zoho Mapping'),
-    '#default_value' => $settings['mapping'],
-    '#options' => $options,
-    '#required' => TRUE,
-    '#disabled' => empty($options),
-    '#description' => empty($options) ? t('There are no Zoho CRM mappings defined.') : '',
-  );
-}
-
-/**
  * Wrapper around zohocrm_delete_zoho_record(). Used by Rules'
  * action and Ubercart's CA action for deleting Zoho records.
  *
