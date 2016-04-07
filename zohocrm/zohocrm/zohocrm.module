@@ -431,8 +431,9 @@ function zohocrm_send_data($object, $settings) {
       $params = array(
         'duplicateCheck' => 2,
       );
+      $xml_data = $zoho->toXML($data);
       zohocrm_log('INSERT RECORD');
-      $response = $zoho->insertRecords($data, $params);
+      $response = $zoho->insertRecords($xml_data, $params);
 
       // @todo: ensure new record is added only if insertRecords() succeeded
       if (!empty($drupal_id)) {
